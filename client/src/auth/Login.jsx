@@ -6,8 +6,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../context/AuthContext';
 
-// ✅ Use your Render backend URL
-const BASE_URL = import.meta.env.VITE_API_URL || "https://nuel-house.onrender.com";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,7 +23,7 @@ const Login = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -45,25 +44,22 @@ const Login = () => {
       });
 
       const data = await response.json();
-
       console.log("Login API Response:", data);
 
-      if (!response.ok) {
+      if (data.status !== 'success') {
         toast.error(data.message || 'Login failed. Please check your credentials.');
         setIsLoading(false);
         return;
       }
 
-      if (data.status === 'success') {
-        login(data.user, data.token); 
-        toast.success('Login successful! Redirecting...');
+      // Successful login
+      login(data.user, data.token);
+      toast.success('Login successful! Redirecting...');
 
-        setTimeout(() => {
-          navigate('/');
-        }, 1000);
-      } else {
-        toast.error(data.message || 'Login failed');
-      }
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+
     } catch (error) {
       console.error('Login error:', error);
       toast.error('An error occurred. Please try again.');

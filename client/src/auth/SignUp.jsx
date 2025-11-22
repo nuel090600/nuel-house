@@ -5,8 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// ✅ Use your environment BASE URL
-const BASE_URL = import.meta.env.VITE_API_URL || "https://nuel-house.onrender.com";
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -31,10 +30,7 @@ const Signup = () => {
   const handlePasswordFocus = () => {
     toast.info(
       "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
-      {
-        autoClose: 6000,
-        pauseOnHover: true,
-      }
+      { autoClose: 6000, pauseOnHover: true }
     );
   };
 
@@ -67,19 +63,13 @@ const Signup = () => {
       const response = await fetch(`${BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email,
-          password,
-          confirmPassword,
-        }),
+        body: JSON.stringify({ firstName, lastName, email, password, confirmPassword }),
       });
 
       const data = await response.json();
       console.log("Signup response:", data);
 
-      if (!response.ok) {
+      if (data.status !== 'success') {
         if (data.message?.toLowerCase().includes("email")) {
           toast.error("This email is already registered");
         } else {
@@ -89,6 +79,7 @@ const Signup = () => {
       }
 
       setShowSuccessModal(true);
+
     } catch (error) {
       console.error("Signup Error:", error);
       toast.error("Something went wrong. Please try again.");
@@ -105,10 +96,7 @@ const Signup = () => {
   return (
     <div
       className="min-h-screen flex flex-col md:flex-row bg-cover bg-center md:bg-none"
-      style={{
-        backgroundImage:
-          "url('https://res.cloudinary.com/dqqectes0/image/upload/v1748531328/Frame_1000002379_czyuxy.png')",
-      }}
+      style={{ backgroundImage: "url('https://res.cloudinary.com/dqqectes0/image/upload/v1748531328/Frame_1000002379_czyuxy.png')" }}
     >
       <button
         onClick={() => navigate("/")}
@@ -138,7 +126,6 @@ const Signup = () => {
                 required
                 className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500"
               />
-
               <input
                 type="text"
                 name="lastName"
@@ -189,20 +176,15 @@ const Signup = () => {
                 className="mt-1 h-4 w-4 text-green-600 rounded"
               />
               I agree to{" "}
-              <a href="#" className="text-green-600 hover:underline">
-                Terms of Service
-              </a>{" "}
+              <a href="#" className="text-green-600 hover:underline">Terms of Service</a>{" "}
               &{" "}
-              <a href="#" className="text-green-600 hover:underline">
-                Privacy Policies
-              </a>
+              <a href="#" className="text-green-600 hover:underline">Privacy Policies</a>
             </label>
 
             <button
+              type="submit"
               disabled={isLoading}
-              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition ${
-                isLoading ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
             >
               {isLoading ? "Processing..." : "Sign up"}
             </button>
@@ -226,9 +208,7 @@ const Signup = () => {
 
             <p className="text-sm text-center text-gray-600 mt-4">
               Already have an account?{" "}
-              <a href="/login" className="text-green-600 hover:underline">
-                Sign in
-              </a>
+              <a href="/login" className="text-green-600 hover:underline">Sign in</a>
             </p>
           </form>
         </div>
@@ -247,28 +227,13 @@ const Signup = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-sm w-full">
             <div className="text-center">
-              <svg
-                className="mx-auto h-12 w-12 text-green-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mt-3">
-                Signup Successful!
-              </h3>
-              <p className="text-gray-500 mt-2">
-                Your account has been created.
-              </p>
-
+              <h3 className="text-lg font-medium text-gray-900 mt-3">Signup Successful!</h3>
+              <p className="text-gray-500 mt-2">Your account has been created.</p>
               <div className="mt-6">
-                <button
-                  onClick={handleModalLogin}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md"
-                >
-                  Login
-                </button>
+                <button onClick={handleModalLogin} className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md">Login</button>
               </div>
             </div>
           </div>
