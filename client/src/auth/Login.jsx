@@ -4,15 +4,20 @@ import { HiArrowLeft } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useAuth } from '../context/AuthContext'; // ✅ Add this import
+import { useAuth } from '../context/AuthContext';
+
+// ✅ Use your Render backend URL
+const BASE_URL = import.meta.env.VITE_API_URL || "https://nuel-house.onrender.com";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ Get login function from AuthContext
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
   const [isLoading, setIsLoading] = useState(false);
 
   const { email, password } = formData;
@@ -33,16 +38,15 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://nuel-house.onrender.com/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
-      // ✅ ADD DEBUG LOGGING
-      console.log('Login API Response:', data);
+      console.log("Login API Response:", data);
 
       if (!response.ok) {
         toast.error(data.message || 'Login failed. Please check your credentials.');
@@ -50,13 +54,12 @@ const Login = () => {
         return;
       }
 
-      // ✅ CRITICAL: Use AuthContext login instead of localStorage directly
       if (data.status === 'success') {
-        login(data.user, data.token); // ✅ This updates React state and navbar
+        login(data.user, data.token); 
         toast.success('Login successful! Redirecting...');
-        
+
         setTimeout(() => {
-          navigate('/'); // Redirect to home or dashboard
+          navigate('/');
         }, 1000);
       } else {
         toast.error(data.message || 'Login failed');
@@ -104,6 +107,7 @@ const Login = () => {
               className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
+
             <input
               type="password"
               name="password"
@@ -118,9 +122,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
-                isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
-              }`}
+              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
@@ -136,7 +138,7 @@ const Login = () => {
 
             <button
               type="button"
-              className="w-full border border-gray-300 py-3 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition cursor-pointer"
+              className="w-full border border-gray-300 py-3 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition cursor-pointer"
               onClick={() => toast.info('Google login coming soon!')}
             >
               <FcGoogle className="text-xl" />
