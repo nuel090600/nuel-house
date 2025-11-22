@@ -36,6 +36,7 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submit button clicked"); // Debug log
 
     if (!agreeToTerms) {
       toast.error("You must agree to the terms and conditions");
@@ -47,9 +48,7 @@ const Signup = () => {
       return;
     }
 
-    const strongPasswordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!strongPasswordRegex.test(password)) {
       toast.error(
         "Password must be at least 8 characters with uppercase, lowercase, number, and special character."
@@ -58,6 +57,7 @@ const Signup = () => {
     }
 
     setIsLoading(true);
+    console.log("Making API request to:", `${BASE_URL}/api/auth/signup`); // Debug log
 
     try {
       const response = await fetch(`${BASE_URL}/api/auth/signup`, {
@@ -78,11 +78,14 @@ const Signup = () => {
         return;
       }
 
+      // Store token and show success
+      localStorage.setItem('token', data.token);
       setShowSuccessModal(true);
+      toast.success("Account created successfully!");
 
     } catch (error) {
       console.error("Signup Error:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -93,14 +96,18 @@ const Signup = () => {
     navigate("/login");
   };
 
+  const handleBackClick = () => {
+    navigate("/");
+  };
+
   return (
     <div
       className="min-h-screen flex flex-col md:flex-row bg-cover bg-center md:bg-none"
       style={{ backgroundImage: "url('https://res.cloudinary.com/dqqectes0/image/upload/v1748531328/Frame_1000002379_czyuxy.png')" }}
     >
       <button
-        onClick={() => navigate("/")}
-        className="absolute top-4 left-4 text-gray-700 hover:text-green-600 flex items-center z-20"
+        onClick={handleBackClick}
+        className="absolute top-4 left-4 text-gray-700 hover:text-green-600 flex items-center z-20 cursor-pointer"
       >
         <HiArrowLeft className="text-2xl" />
         <span className="ml-1 text-sm font-medium">Back</span>
@@ -124,7 +131,7 @@ const Signup = () => {
                 onChange={handleChange}
                 placeholder="First Name"
                 required
-                className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500"
+                className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
               />
               <input
                 type="text"
@@ -133,7 +140,7 @@ const Signup = () => {
                 onChange={handleChange}
                 placeholder="Last Name"
                 required
-                className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500"
+                className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
               />
             </div>
 
@@ -144,7 +151,7 @@ const Signup = () => {
               onChange={handleChange}
               placeholder="Enter your email"
               required
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
             />
 
             <input
@@ -155,7 +162,7 @@ const Signup = () => {
               onFocus={handlePasswordFocus}
               placeholder="Enter your password"
               required
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
             />
 
             <input
@@ -165,7 +172,7 @@ const Signup = () => {
               onChange={handleChange}
               placeholder="Confirm your password"
               required
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
             />
 
             <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
@@ -173,18 +180,20 @@ const Signup = () => {
                 type="checkbox"
                 checked={agreeToTerms}
                 onChange={() => setAgreeToTerms(prev => !prev)}
-                className="mt-1 h-4 w-4 text-green-600 rounded"
+                className="mt-1 h-4 w-4 text-green-600 rounded cursor-pointer focus:ring-green-500"
               />
               I agree to{" "}
-              <a href="#" className="text-green-600 hover:underline">Terms of Service</a>{" "}
+              <a href="#" className="text-green-600 hover:underline cursor-pointer">Terms of Service</a>{" "}
               &{" "}
-              <a href="#" className="text-green-600 hover:underline">Privacy Policies</a>
+              <a href="#" className="text-green-600 hover:underline cursor-pointer">Privacy Policies</a>
             </label>
 
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
+              }`}
             >
               {isLoading ? "Processing..." : "Sign up"}
             </button>
@@ -200,7 +209,8 @@ const Signup = () => {
 
             <button
               type="button"
-              className="w-full border border-gray-300 py-3 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50"
+              className="w-full border border-gray-300 py-3 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 cursor-pointer"
+              onClick={() => toast.info('Google signup coming soon!')}
             >
               <FcGoogle className="text-xl" />
               <span>Continue with Google</span>
@@ -208,7 +218,7 @@ const Signup = () => {
 
             <p className="text-sm text-center text-gray-600 mt-4">
               Already have an account?{" "}
-              <a href="/login" className="text-green-600 hover:underline">Sign in</a>
+              <a href="/login" className="text-green-600 font-medium hover:underline cursor-pointer">Sign in</a>
             </p>
           </form>
         </div>
@@ -225,15 +235,20 @@ const Signup = () => {
 
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-sm w-full">
+          <div className="bg-white p-6 rounded-lg max-w-sm w-full mx-4">
             <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeWidth="2" d="M5 13l4 4L19 7" />
+              <svg className="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               <h3 className="text-lg font-medium text-gray-900 mt-3">Signup Successful!</h3>
-              <p className="text-gray-500 mt-2">Your account has been created.</p>
+              <p className="text-gray-500 mt-2">Your account has been created successfully.</p>
               <div className="mt-6">
-                <button onClick={handleModalLogin} className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md">Login</button>
+                <button 
+                  onClick={handleModalLogin}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer"
+                >
+                  Login Now
+                </button>
               </div>
             </div>
           </div>

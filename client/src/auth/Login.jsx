@@ -11,19 +11,17 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-
   const [isLoading, setIsLoading] = useState(false);
 
   const { email, password } = formData;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -38,13 +36,12 @@ const Login = () => {
 
     try {
       const response = await fetch(`${BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
-      console.log("Login API Response:", data);
 
       if (data.status !== 'success') {
         toast.error(data.message || 'Login failed. Please check your credentials.');
@@ -52,7 +49,6 @@ const Login = () => {
         return;
       }
 
-      // Successful login
       login(data.user, data.token);
       toast.success('Login successful! Redirecting...');
 
@@ -72,8 +68,7 @@ const Login = () => {
     <div
       className="min-h-screen flex flex-col md:flex-row bg-cover bg-center md:bg-none"
       style={{
-        backgroundImage:
-          "url('https://res.cloudinary.com/dqqectes0/image/upload/v1748531328/Frame_1000002379_czyuxy.png')",
+        backgroundImage: "url('https://res.cloudinary.com/dqqectes0/image/upload/v1748531328/Frame_1000002379_czyuxy.png')",
       }}
     >
       <button
@@ -103,7 +98,6 @@ const Login = () => {
               className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               required
             />
-
             <input
               type="password"
               name="password"
