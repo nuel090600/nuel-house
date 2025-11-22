@@ -10,10 +10,9 @@ const app = express();
 
 // CORS Setup
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://nuel-house.vercel.app', 
-  credentials: false
+  origin: ['http://localhost:5173', 'https://nuel-house.vercel.app'],
+  credentials: true, // ✅ allows cookies/auth if needed
 }));
-
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
