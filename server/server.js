@@ -3,8 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
+const propertyRoutes = require('./routes/propertyRoutes'); // ✅ Import property routes
 
-const app = express();
+const app = express(); // ✅ Create app FIRST
 
 // ===== Middleware =====
 
@@ -23,19 +24,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// ===== Connect to MongoDB =====
-const connectDB = async () => {
-  try {
-    // Remove the deprecated options for newer MongoDB driver
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ MongoDB connected successfully');
-  } catch (err) {
-    console.error('❌ MongoDB connection error:', err.message);
-    process.exit(1);
-  }
-};
 // ===== Routes =====
 app.use('/api/auth', authRoutes);
+app.use('/api/properties', propertyRoutes); // ✅ MOVED HERE - after app is created
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -52,6 +43,18 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Internal Server Error' });
 });
+
+// ===== Connect to MongoDB =====
+const connectDB = async () => {
+  try {
+    // Remove the deprecated options for newer MongoDB driver
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('✅ MongoDB connected successfully');
+  } catch (err) {
+    console.error('❌ MongoDB connection error:', err.message);
+    process.exit(1);
+  }
+};
 
 // ===== Start Server =====
 const PORT = process.env.PORT || 5000;
