@@ -15,9 +15,8 @@ const PropertyCard = ({ property }) => (
           Featured
         </span>
       )}
-      <span className={`absolute top-2 right-2 text-white text-xs px-2 py-1 rounded ${
-        property.for === "Rent" ? "bg-blue-500" : "bg-green-600"
-      }`}>
+      <span className={`absolute top-2 right-2 text-white text-xs px-2 py-1 rounded ${property.for === "Rent" ? "bg-blue-500" : "bg-green-600"
+        }`}>
         {property.for}
       </span>
     </div>
@@ -29,7 +28,7 @@ const PropertyCard = ({ property }) => (
           {property.location}
         </div>
       </div>
-      
+
       <div className="flex items-center gap-4 text-sm text-gray-600 mt-3 mb-4">
         <div className="flex items-center gap-1">
           <FaBed className="text-gray-400" /> {property.bedrooms}
@@ -38,7 +37,7 @@ const PropertyCard = ({ property }) => (
           <FaBath className="text-gray-400" /> {property.bathrooms}
         </div>
       </div>
-      
+
       <div className="mt-auto">
         <div className="font-bold text-gray-900 text-lg">
           {property.price}
@@ -60,20 +59,29 @@ export default function PropertiesGrid() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
   // ✅ REAL API CALL - Fetch properties from your backend
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/properties');
-        
+
+        // Get the correct API URL for both localhost and production
+        const getAPIUrl = () => {
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:5000';
+          }
+          return 'https://nuel-house.onrender.com';
+        };
+
+        const API_URL = getAPIUrl();
+        const response = await fetch(`${API_URL}/api/properties`);
+
         if (!response.ok) {
           throw new Error('Failed to fetch properties');
         }
-        
+
         const data = await response.json();
-        
+
         if (data.status === 'success') {
           setProperties(data.data.properties);
         } else {
@@ -121,7 +129,7 @@ export default function PropertiesGrid() {
             Showing 1–{properties.length} of {properties.length} results
           </div>
           <div className="text-sm text-gray-600">
-            Sort by: 
+            Sort by:
             <select className="ml-2 border rounded px-2 py-1 bg-white">
               <option>Default</option>
               <option>Price: Low to High</option>
@@ -151,11 +159,10 @@ export default function PropertiesGrid() {
             {[1, 2, 3, 4].map((page) => (
               <button
                 key={page}
-                className={`px-4 py-2 border rounded text-sm ${
-                  page === 2
+                className={`px-4 py-2 border rounded text-sm ${page === 2
                     ? 'bg-[#3D9970] text-white border-[#3D9970]'
                     : 'hover:bg-gray-100 text-gray-700'
-                }`}
+                  }`}
               >
                 {page}
               </button>
