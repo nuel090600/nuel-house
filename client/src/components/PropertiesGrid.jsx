@@ -84,6 +84,7 @@ export default function PropertiesGrid() {
         const fetchProperties = async () => {
             try {
                 setLoading(true);
+                setError('');
                 const API_URL = getAPIUrl();
                 console.log('🌐 Fetching properties from:', API_URL);
 
@@ -92,7 +93,14 @@ export default function PropertiesGrid() {
                 console.log('📡 Response status:', response.status);
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // Handle specific HTTP errors
+                    if (response.status === 404) {
+                        throw new Error('Properties API endpoint not found');
+                    } else if (response.status === 500) {
+                        throw new Error('Server error - please try again later');
+                    } else {
+                        throw new Error(`Server returned ${response.status} error`);
+                    }
                 }
 
                 const data = await response.json();
@@ -115,7 +123,8 @@ export default function PropertiesGrid() {
                 }
             } catch (err) {
                 console.error('❌ Error fetching properties:', err);
-                setError(`Failed to load properties: ${err.message}. Make sure your backend is running.`);
+                // ✅ REMOVED THE LOCALHOST ERROR MESSAGE
+                setError(`Unable to load properties: ${err.message}`);
             } finally {
                 setLoading(false);
             }
@@ -163,6 +172,41 @@ export default function PropertiesGrid() {
         navigate('/');
     };
 
+    const retryFetch = () => {
+        setError('');
+        setLoading(true);
+        // Re-fetch properties
+        const fetchProperties = async () => {
+            try {
+                const API_URL = getAPIUrl();
+                const response = await fetch(`${API_URL}/api/properties`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status} error`);
+                }
+
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    setProperties(data.data?.properties || []);
+                    applyFilters(data.data?.properties || []);
+                } else if (Array.isArray(data)) {
+                    setProperties(data);
+                    applyFilters(data);
+                } else if (data.properties) {
+                    setProperties(data.properties);
+                    applyFilters(data.properties);
+                }
+            } catch (err) {
+                setError(`Unable to load properties: ${err.message}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchProperties();
+    };
+
     const hasActiveFilters = locationFilter || typeFilter || bedroomsFilter;
 
     if (loading) {
@@ -180,17 +224,22 @@ export default function PropertiesGrid() {
         return (
             <section className="px-4 md:px-8 lg:px-16 py-10 bg-gray-50 pt-20">
                 <div className="max-w-7xl mx-auto text-center">
-                    <div className="text-red-500 text-lg mb-4">Error Loading Properties</div>
+                    <div className="text-red-500 text-lg mb-4">Unable to Load Properties</div>
                     <div className="text-gray-600 mb-4">{error}</div>
-                    <div className="text-sm text-gray-500">
-                        Backend URL: {getAPIUrl()}
+                    <div className="flex gap-4 justify-center mt-6">
+                        <button
+                            onClick={retryFetch}
+                            className="bg-[#3D9970] text-white px-6 py-2 rounded hover:bg-green-700"
+                        >
+                            Try Again
+                        </button>
+                        <button
+                            onClick={goBackToHome}
+                            className="flex items-center gap-2 bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700"
+                        >
+                            <FaHome /> Back to Home
+                        </button>
                     </div>
-                    <button
-                        onClick={goBackToHome}
-                        className="flex items-center gap-2 bg-[#3D9970] text-white px-6 py-2 rounded hover:bg-green-700 mt-4 mx-auto"
-                    >
-                        <FaHome /> Back to Home
-                    </button>
                 </div>
             </section>
         );
@@ -277,7 +326,7 @@ export default function PropertiesGrid() {
 
                 {filteredProperties.length === 0 && !hasActiveFilters && (
                     <div className="text-center py-12">
-                        <div className="text-gray-500 text-lg">No properties found in database</div>
+                        <div className="text-gray-500 text-lg">No properties found</div>
                         <button
                             onClick={goBackToHome}
                             className="flex items-center gap-2 bg-[#3D9970] text-white px-6 py-2 rounded hover:bg-green-700 mt-4"
