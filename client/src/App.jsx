@@ -7,7 +7,8 @@ import Signup from './auth/SignUp';
 import PopularProperties from './pages/PopularProperties';
 import PropertyDetails from './components/PropertyDetails';
 import Login from './auth/Login';
-import UserMenu from './components/UserMenu'
+import UserMenu from './components/UserMenu';
+import PropertiesGrid from './components/PropertiesGrid'; // ✅ Use this one
 
 const MainLayout = () => (
   <>
@@ -24,8 +25,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/propertydetails" element={<PropertyDetails />} />
         <Route path="/popularproperties" element={<PopularProperties />} />
+        <Route path="/properties" element={<PropertiesGrid />} />
       </Route>
-      <Route path="/usermenu" elemet={<UserMenu />} />
+      <Route path="/usermenu" element={<UserMenu />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
     </Routes>

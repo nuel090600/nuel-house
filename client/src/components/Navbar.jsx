@@ -7,23 +7,47 @@ import UserMenu from './UserMenu';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+
+  // Check if current page needs solid background
+  const isPropertiesPage = location.pathname === '/properties';
+  
+  // Handle scroll for background change
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
+  // Determine navbar background and text colors
+  const shouldHaveSolidBackground = isPropertiesPage || isScrolled;
+  const navbarBackground = shouldHaveSolidBackground 
+    ? 'bg-white shadow-md' 
+    : 'bg-transparent';
+  
+  const textColor = shouldHaveSolidBackground ? 'text-gray-800' : 'text-white';
+  const borderColor = shouldHaveSolidBackground ? 'border-gray-700' : 'border-white';
+  const hoverBgColor = shouldHaveSolidBackground ? 'hover:bg-gray-800 hover:text-white' : 'hover:bg-white hover:text-black';
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-transparent px-4 md:px-8 py-4 flex justify-between items-center">
+    <header className={`fixed top-0 left-0 w-full z-50 ${navbarBackground} px-4 md:px-8 py-4 flex justify-between items-center transition-all duration-300`}>
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 z-50">
         <div className="bg-green-600 text-white font-bold rounded-full w-10 h-10 flex items-center justify-center text-lg">BH</div>
-        <span className="text-white text-xl font-semibold">BetaHouse</span>
+        <span className={`text-xl font-semibold ${textColor}`}>BetaHouse</span>
       </Link>
 
       {/* Desktop Nav */}
-      <nav className="hidden md:flex gap-8 text-white font-medium">
+      <nav className={`hidden md:flex gap-8 font-medium ${textColor}`}>
         <Link to="/" className="hover:text-green-400 transition-colors">Home</Link>
         <Link to="/properties" className="hover:text-green-400 transition-colors">Properties</Link>
         <Link to="/about" className="hover:text-green-400 transition-colors">About Us</Link>
@@ -37,7 +61,12 @@ const Navbar = () => {
           <UserMenu />
         ) : (
           <>
-            <Link to="/signup" className="text-white border border-white px-4 py-2 rounded hover:bg-white hover:text-black transition-colors">Sign Up</Link>
+            <Link 
+              to="/signup" 
+              className={`border px-4 py-2 rounded transition-colors ${textColor} ${borderColor} ${hoverBgColor}`}
+            >
+              Sign Up
+            </Link>
             <Link to="/login" className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors">Login</Link>
           </>
         )}
@@ -46,7 +75,7 @@ const Navbar = () => {
       {/* Mobile Toggle */}
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className="md:hidden text-white text-2xl z-50" 
+        className={`md:hidden text-2xl z-50 ${textColor}`}
         aria-label="Toggle Menu"
       >
         {isOpen ? <FaTimes /> : <FaBars />}
@@ -106,4 +135,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Navbar;  

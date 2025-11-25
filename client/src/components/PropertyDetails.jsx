@@ -1,111 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaBath, FaBed, FaHeart, FaShareAlt } from 'react-icons/fa';
 import { MdLocationOn } from 'react-icons/md';
 
-const properties = [
-  {
-    _id: 1,
-    title: "Real House Luxury Villa",
-    location: "Victoria Island, Lagos",
-    bedrooms: 6,
-    bathrooms: 3,
-    price: "₦ 3,340,000,000",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388673/houseimage1_u0b5mm.png",
-    featured: true,
-    for: "Sale",
-  },
-  {
-    _id: 2,
-    title: "Exquisite Haven Villa",
-    location: "Festac, Lagos",
-    bedrooms: 5,
-    bathrooms: 3,
-    price: "₦ 4,000,000/1 Year",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388674/houseimage2_biyoxb.png",
-    featured: true,
-    for: "Rent",
-  },
-  {
-    _id: 3,
-    title: "Luxe Palatial Villa",
-    location: "Gbagada, Lagos",
-    bedrooms: 7,
-    bathrooms: 3,
-    price: "₦ 5,350,000,000",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388673/houseimage3_tdw8hm.png",
-    featured: true,
-    for: "Sale",
-  },
-  {
-    _id: 4,
-    title: "Harmony Luxury Villa",
-    location: "Mushin, Lagos",
-    bedrooms: 4,
-    bathrooms: 3,
-    price: "₦ 4,000,000,000",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388674/houseimage4_rnhqr6.png",
-    featured: true,
-    for: "Sale",
-  },
-  {
-    _id: 5,
-    title: "Real House Luxury Villa",
-    location: "Victoria Island, Lagos",
-    bedrooms: 6,
-    bathrooms: 4,
-    price: "₦ 350,000,000/1 Year",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388673/houseimage5_anqrfl.png",
-    featured: true,
-    for: "Rent",
-  },
-  {
-    _id: 6,
-    title: "Real House Luxury Villa",
-    location: "Lekki-Ajah, Lagos",
-    bedrooms: 5,
-    bathrooms: 3,
-    price: "₦ 4,200,000,000",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388674/houseimage6_uv6em9.png",
-    featured: true,
-    for: "Sale",
-  },
-  {
-    _id: 7,
-    title: "Infinite Bliss Villa",
-    location: "Ishagu, Enugu",
-    bedrooms: 5,
-    bathrooms: 3,
-    price: "₦ 2,350,000,000",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388673/houseimage7_r3umij.png",
-    featured: true,
-    for: "Sale",
-  },
-  {
-    _id: 8,
-    title: "Real House Luxury Villa",
-    location: "Work Layout, Owerri",
-    bedrooms: 8,
-    bathrooms: 6,
-    price: "₦ 3,350,000/1 Year",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388673/houseimage8_en55nk.png",
-    featured: true,
-    for: "Rent",
-  },
-  {
-    _id: 9,
-    title: "Real House Luxury Villa",
-    location: "Ikeja, Lagos",
-    bedrooms: 6,
-    bathrooms: 6,
-    price: "₦ 600,000,000",
-    image: "https://res.cloudinary.com/ds0a0s3k3/image/upload/v1748388673/houseimage9_tmjjmt.png",
-    featured: true,
-    for: "Sale",
-  },
-];
-
 const PropertyCard = ({ property }) => (
-  <div className="bg-white rounded-lg  overflow-hidden shadow-md flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
+  <div className="bg-white rounded-lg overflow-hidden shadow-md flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
     <div className="relative">
       <img
         src={property.image}
@@ -159,6 +57,62 @@ const PropertyCard = ({ property }) => (
 );
 
 export default function PropertiesGrid() {
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // ✅ REAL API CALL - Fetch properties from your backend
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:5000/api/properties');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch properties');
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          setProperties(data.data.properties);
+        } else {
+          throw new Error(data.message || 'Failed to fetch properties');
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching properties:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="px-4 md:px-8 lg:px-16 py-10 bg-gray-50 pt-20">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="text-lg">Loading properties...</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="px-4 md:px-8 lg:px-16 py-10 bg-gray-50 pt-20">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="text-red-500 text-lg">Error: {error}</div>
+          <div className="text-gray-600 mt-2">
+            Make sure your backend server is running on http://localhost:5000
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="px-4 md:px-8 lg:px-16 py-10 bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto">
@@ -181,6 +135,16 @@ export default function PropertiesGrid() {
             <PropertyCard key={property._id} property={property} />
           ))}
         </div>
+
+        {/* Show message if no properties */}
+        {properties.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-500 text-lg">No properties found</div>
+            <div className="text-gray-400 mt-2">
+              Add some properties to your database to see them here
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-center mt-12">
           <nav className="flex items-center gap-1">
