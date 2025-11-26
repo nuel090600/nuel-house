@@ -17,6 +17,15 @@ const Signup = () => {
     confirmPassword: ''
   });
 
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    agreeToTerms: ''
+  });
+
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -24,7 +33,73 @@ const Signup = () => {
   const { firstName, lastName, email, password, confirmPassword } = formData;
 
   const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      agreeToTerms: ''
+    };
+    let isValid = true;
+
+    // First Name validation
+    if (!firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+      isValid = false;
+    }
+
+    // Last Name validation
+    if (!lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+      isValid = false;
+    }
+
+    // Email validation
+    if (!email) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    // Password validation
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    } else if (!strongPasswordRegex.test(password)) {
+      newErrors.password = 'Password must be 8+ characters with uppercase, lowercase, number, and special character';
+      isValid = false;
+    }
+
+    // Confirm Password validation
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+      isValid = false;
+    }
+
+    // Terms validation
+    if (!agreeToTerms) {
+      newErrors.agreeToTerms = 'You must agree to the terms and conditions';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handlePasswordFocus = () => {
@@ -36,28 +111,13 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submit button clicked"); // Debug log
 
-    if (!agreeToTerms) {
-      toast.error("You must agree to the terms and conditions");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-    if (!strongPasswordRegex.test(password)) {
-      toast.error(
-        "Password must be at least 8 characters with uppercase, lowercase, number, and special character."
-      );
+    if (!validateForm()) {
+      toast.error('Please fix the form errors before submitting');
       return;
     }
 
     setIsLoading(true);
-    console.log("Making API request to:", `${BASE_URL}/api/auth/signup`); // Debug log
 
     try {
       const response = await fetch(`${BASE_URL}/api/auth/signup`, {
@@ -67,13 +127,12 @@ const Signup = () => {
       });
 
       const data = await response.json();
-      console.log("Signup response:", data);
 
       if (data.status !== 'success') {
         if (data.message?.toLowerCase().includes("email")) {
-          toast.error("This email is already registered");
+          setErrors(prev => ({ ...prev, email: 'This email is already registered' }));
         } else {
-          toast.error(data.message || "Signup failed");
+          toast.error(data.message || "Signup failed. Please try again.");
         }
         return;
       }
@@ -124,69 +183,128 @@ const Signup = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
-              <input
-                type="text"
-                name="firstName"
-                value={firstName}
-                onChange={handleChange}
-                placeholder="First Name"
-                required
-                className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
-              />
-              <input
-                type="text"
-                name="lastName"
-                value={lastName}
-                onChange={handleChange}
-                placeholder="Last Name"
-                required
-                className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
-              />
+              <div className="w-full">
+                <input
+                  type="text"
+                  name="firstName"
+                  value={firstName}
+                  onChange={handleChange}
+                  placeholder="First Name"
+                  className={`w-full border p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text ${
+                    errors.firstName ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  required
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <span className="mr-1">⚠</span> {errors.firstName}
+                  </p>
+                )}
+              </div>
+              <div className="w-full">
+                <input
+                  type="text"
+                  name="lastName"
+                  value={lastName}
+                  onChange={handleChange}
+                  placeholder="Last Name"
+                  className={`w-full border p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text ${
+                    errors.lastName ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  required
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-sm mt-1 flex items-center">
+                    <span className="mr-1">⚠</span> {errors.lastName}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
-            />
-
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={handleChange}
-              onFocus={handlePasswordFocus}
-              placeholder="Enter your password"
-              required
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
-            />
-
-            <input
-              type="password"
-              name="confirmPassword"
-              value={confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm your password"
-              required
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text"
-            />
-
-            <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
+            <div>
               <input
-                type="checkbox"
-                checked={agreeToTerms}
-                onChange={() => setAgreeToTerms(prev => !prev)}
-                className="mt-1 h-4 w-4 text-green-600 rounded cursor-pointer focus:ring-green-500"
+                type="email"
+                name="email"
+                value={email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                className={`w-full border p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
               />
-              I agree to{" "}
-              <a href="#" className="text-green-600 hover:underline cursor-pointer">Terms of Service</a>{" "}
-              &{" "}
-              <a href="#" className="text-green-600 hover:underline cursor-pointer">Privacy Policies</a>
-            </label>
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="mr-1">⚠</span> {errors.email}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="password"
+                name="password"
+                value={password}
+                onChange={handleChange}
+                onFocus={handlePasswordFocus}
+                placeholder="Enter your password"
+                className={`w-full border p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="mr-1">⚠</span> {errors.password}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm your password"
+                className={`w-full border p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent cursor-text ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="mr-1">⚠</span> {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreeToTerms}
+                  onChange={() => {
+                    setAgreeToTerms(prev => !prev);
+                    if (errors.agreeToTerms) {
+                      setErrors(prev => ({ ...prev, agreeToTerms: '' }));
+                    }
+                  }}
+                  className={`mt-1 h-4 w-4 text-green-600 rounded cursor-pointer focus:ring-green-500 ${
+                    errors.agreeToTerms ? 'border-red-500' : ''
+                  }`}
+                />
+                I agree to{" "}
+                <a href="#" className="text-green-600 hover:underline cursor-pointer">Terms of Service</a>{" "}
+                &{" "}
+                <a href="#" className="text-green-600 hover:underline cursor-pointer">Privacy Policies</a>
+              </label>
+              {errors.agreeToTerms && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="mr-1">⚠</span> {errors.agreeToTerms}
+                </p>
+              )}
+            </div>
 
             <button
               type="submit"

@@ -15,6 +15,10 @@ const Login = () => {
     email: '',
     password: '',
   });
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+  });
   const [isLoading, setIsLoading] = useState(false);
 
   const { email, password } = formData;
@@ -22,13 +26,43 @@ const Login = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = { email: '', password: '' };
+    let isValid = true;
+
+    // Email validation
+    if (!email) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    // Password validation
+    if (!password) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
-      toast.error('Please fill in both email and password');
+    if (!validateForm()) {
+      toast.error('Please fix the form errors');
       return;
     }
 
@@ -44,7 +78,14 @@ const Login = () => {
       const data = await response.json();
 
       if (data.status !== 'success') {
-        toast.error(data.message || 'Login failed. Please check your credentials.');
+        // Show inline error for specific fields
+        if (data.message?.toLowerCase().includes('email') || data.message?.toLowerCase().includes('user')) {
+          setErrors(prev => ({ ...prev, email: data.message }));
+        } else if (data.message?.toLowerCase().includes('password')) {
+          setErrors(prev => ({ ...prev, password: data.message }));
+        } else {
+          toast.error(data.message || 'Login failed. Please check your credentials.');
+        }
         setIsLoading(false);
         return;
       }
@@ -58,7 +99,7 @@ const Login = () => {
 
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('An error occurred. Please try again.');
+      toast.error('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -89,30 +130,51 @@ const Login = () => {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="email"
-              name="email"
-              value={email}
-              onChange={handleChange}
-              placeholder="Email address"
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-            />
-            <input
-              type="password"
-              name="password"
-              value={password}
-              onChange={handleChange}
-              placeholder="Password"
-              className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              required
-              minLength={8}
-            />
+            <div>
+              <input
+                type="email"
+                name="email"
+                value={email}
+                onChange={handleChange}
+                placeholder="Email address"
+                className={`w-full border p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  errors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
+              />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="mr-1">⚠</span> {errors.email}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <input
+                type="password"
+                name="password"
+                value={password}
+                onChange={handleChange}
+                placeholder="Password"
+                className={`w-full border p-3 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
+                required
+                minLength={8}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1 flex items-center">
+                  <span className="mr-1">⚠</span> {errors.password}
+                </p>
+              )}
+            </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+              className={`w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
+              }`}
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
@@ -128,7 +190,7 @@ const Login = () => {
 
             <button
               type="button"
-              className="w-full border border-gray-300 py-3 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition cursor-pointer"
+              className="w-full border border-gray-300 py-3 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 cursor-pointer"
               onClick={() => toast.info('Google login coming soon!')}
             >
               <FcGoogle className="text-xl" />
